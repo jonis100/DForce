@@ -1,90 +1,104 @@
-# This is a sample Python script.
-
+import random
+import re
+import string
 import sys
 import time
-from selenium.webdriver.common.by import By
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import requests
-from selenium import webdriver
-from stem import Signal
-from stem.control import Controller
-from webdriver_manager.chrome import ChromeDriverManager
-
-MAX_TO_PUSH =  5
+from selenium.webdriver.common.by import By
+from seleniumwire import webdriver
+import util
+from names import names_list, mail_list
+driver = webdriver.Chrome('./chromedriver_linux64/chromedriver')
 INTERVAL = 7
-driver = webdriver.Chrome(ChromeDriverManager().install())
+
 
 class PhishingWebsite:
 
-    #represent the URL of phishing
+    # represent the URL and data about the phishing website
     def __init__(self, urlToDown):
         driver.get(urlToDown)
-        # extract correct email, password and submit button from th HTML page
-
-
+        self.init_password = util.generate_pass(8)
+        self.init_name, self.init_mail_provider, self.init_email = util.generate_email()
         self.url = urlToDown
+        self.emailField = driver.find_element(by=By.NAME, value="login_email")
+        self.passwordFiled = driver.find_element(by=By.NAME, value="login_password")
+        self.submitBtn = driver.find_element(by=By.NAME, value="btnLogin")
+        self.data_to_send = None
+        self.url_for_sign = None
 
-        self.emailField = driver.find_element(by=By.NAME, value="email")
-        self.password = driver.find_element(by=By.NAME, value="password")
-        self.submitBtn = driver.find_element(by=By.CLASS_NAME, value="buttonstyle")
-        self.pageSource = driver.page_source
+    # send sample of request  to target in order to capture the request construction
+    def send_sample(self):
 
-    #start attack of filling DB
-    def FillDB(self):
-        self.emailField.send_keys("0000000@gmail.c0m.")
-        self.password.send_keys("0000000@gmail.c0m.")
+        self.emailField.send_keys(self.init_email)
+        self.passwordFiled.send_keys(self.init_password)
         self.submitBtn.click()
-
-    def getUserName(self):
-        usernameField = re([e], self.pageSource)
-
 
 
 # handle the url and attack it
-def hendler(recievedURL):
+def hendler(recieved_url):
+    phishing_website = PhishingWebsite(recieved_url)
+    phishing_website.send_sample()
+    phishing_website.data_to_send, phishing_website.url_for_sign = find_data(phishing_website)
+    fill_db(phishing_website)
 
-    phishingWebsite = PhishingWebsite(recievedURL)
-    phishingWebsite.FillDB()
     driver.quit()
 
-def get_tor_session():
-    session = requests.session()
-    # Tor uses the 9050 port as the default socks port
-    session.proxies = {'http':  'socks5://127.0.0.1:9050',
-                       'https': 'socks5://127.0.0.1:9050'}
-    return session
 
-# signal TOR for a new connection
-def renew_connection():
-    with Controller.from_port(port = 9051) as controller:
-        controller.authenticate(password="Dforce")
-        # controller.authenticate()
-        controller.signal(Signal.NEWNYM)
+def find_data(phishing_website):
+    for request in driver.requests:
+        if request.method == 'POST' \
+                and request.url.startswith(recievedURL) \
+                and re.findall(phishing_website.init_name, request.body.decode("utf-8")):
+            print(
+                request.url,
+                request.response.status_code,
+                request.response.headers['Content-Type'],
+                request.body
+            )
+            return request.body, request.url
+
+
+def randonize_data(phishing_website):
+
+    res = phishing_website.data_to_send.decode("utf-8")
+    gen_name, gen_mail_provider, gen_email = util.generate_email()
+    res = res.replace(phishing_website.init_name, gen_name)
+    res = res.replace(phishing_website.init_mail_provider, gen_mail_provider)
+    return res.encode()
+
+
+def fill_db(phishing_website):
+
+    blocked = False
+    #while not blocked:
+    for i in range(5):
+        random_data = randonize_data(phishing_website)
+        res = requests.post(phishing_website.url_for_sign, data=random_data)            #REQUST
+        if not res.status_code == 200:
+            blocked = True
+    return blocked
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
     recievedURL = sys.argv[1]
-    try:
-        hendler(recievedURL)
-    except:
-        print("Canot hendl")
+    hendler(recievedURL)
 
-    #Switch IP of attacker
-    # for i in range (MAX_TO_PUSH):
-    #
-    #     renew_connection()
-    #     session = get_tor_session()
-    #     print(session.get("http://httpbin.org/ip").text)
-    #     requests.get(recievedURL)
-    #     time.sleep(INTERVAL)
+    # try:
+    #     hendler(recievedURL)
+    # except:
+    #     print("Canot hendle")
+
+    # Switch IP of attacker
+    for i in range(5):
+
+        util.renew_connection()
+        session = util.get_tor_session()
+        print(session.get("http://httpbin.org/ip").text)
+        requests.get(recievedURL)
+        time.sleep(INTERVAL)
 
     # Following prints your normal public IP
     print(requests.get("http://httpbin.org/ip").text)
-
-
-
-
-
-

@@ -1020,3 +1020,4 @@ names_list = \
         "Nathaniel",
         "Niklaus"
     ]
+mail_list = ["gmail", "yahoo", "hotmail"]
