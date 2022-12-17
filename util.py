@@ -11,7 +11,8 @@ from stem.control import Controller
 # generate password in n length
 def generate_pass(n):
 
-    chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+    # Currently other chars in password not work, because not detected (in order to replace) in binary data
+    chars = string.ascii_letters + string.digits #+ '!@#$%^&*()'
     return ''.join(random.choice(chars) for i in range(n))
 
 
@@ -36,6 +37,6 @@ def get_tor_session():
 # signal TOR for a new connection
 def renew_connection():
     with Controller.from_port(port=9051) as controller:
-        controller.authenticate(password="Dforce")
+        controller.authenticate(password="DForce")
         # controller.authenticate()
         controller.signal(Signal.NEWNYM)

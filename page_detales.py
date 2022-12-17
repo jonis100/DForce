@@ -1,5 +1,5 @@
-fileds = {
-            "user_namae": "login_email",
-            "password": "login_password",
-            "submit_button": "btnLogin"
+fileds_names = {
+            "user_name": "wpforms[fields][1]",
+            "password": "wpforms[fields][2]",
+            "submit_button": "wpforms[submit]"
 }
