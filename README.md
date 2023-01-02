@@ -63,7 +63,7 @@ This project tested over local servers only.
 1. [Zphisher](https://github.com/htr-tech/zphisher) 
     issues: after few request stop recording
 2. Wordpress local site over [XAMPP](https://www.apachefriends.org/)
-    htdocs for the test website is attached
+    
 
 # *Important note:*
 # *This program disrupted at testing stage by the [issue](https://github.com/wkeeling/selenium-wire/issues/628) at selenium-wire project*
