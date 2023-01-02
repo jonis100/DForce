@@ -49,9 +49,9 @@ apt install tor
 ## Configurations 
 
 Before you run DForce please copy the elements names of text fields in the website target and paste it in his place in dictionary at page_detales.py file:
-![alt text](https://github.com/jonis100/DForce/Images/Screenshot1 eddited.jpg)
-![alt text](https://github.com/jonis100/DForce/Images/Screenshot2 eddited.jpg)
-![alt text](https://github.com/jonis100/DForce/Images/Screenshot3 eddited.jpg)
+![alt text](https://github.com/jonis100/DForce/blob/main/Images/Screenshot1eddited.jpg)
+![alt text](https://github.com/jonis100/DForce/blob/main/Images/Screenshot2eddited.jpg)
+![alt text](https://github.com/jonis100/DForce/blob/main/Images/Screenshot3eddited.jpg)
 **optional configuration:** After that you can configure use tor or not and more at conf.py file. 
 
 ## Usage 
