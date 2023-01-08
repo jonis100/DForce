@@ -2,8 +2,7 @@
 
 ## _The phishing websites attacker_
 
-DForce is a tool for fill phishing websites Databases with
-data junk as randomized emails and passwords in order to disrupt his efficient.
+DForce is a tool for attacking phishing websites by flooding his Databases in junk. This implemented by sending randomized emails and passwords, in order to disrupt target website activity.
 
 
 ## Features
