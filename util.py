@@ -6,8 +6,8 @@ import names
 import conf
 import requests
 import threading
-#from stem import Signal
-#from stem.control import Controller
+from stem import Signal
+from stem.control import Controller
 
 
 # generate password in n length
@@ -49,33 +49,32 @@ def generate_data(phishing_website):
     data = data.replace(phishing_website.init_name.encode(), random_name.encode())
     data = data.replace(phishing_website.init_mail_provider.encode(), random_mail_provider.encode())
     data = data.replace(phishing_website.init_password.encode(), random_password.encode())
-    print(f'Generated email: {random_email} \n '
-            f'and password: {random_password} ')
-    return data
+    return data, random_email, random_password
+
+
+def send_req(phishing_website):
+    url = phishing_website.first_req_obj.url
+    headers = phishing_website.first_req_obj.headers
+    modified_data, gen_username, gen_pass = generate_data(phishing_website)
+    headers["Content-Length"] = str(len(modified_data))
+
+    try:
+        response = requests.post(url, headers=headers, data=modified_data)
+        print(f'Generated email: {gen_username} \n'
+              f'\tand password: {gen_pass} \n'
+              f'\tand sent. Response status is: {response.status_code}\n')
+        return response.status_code
+    except Exception as e:
+        print("Cannot fill_db because:", e.__class__)
+
 
 #Start fill DB of remote server by sending a lot of data
 def fill_db(phishing_website):
 
-
-    #print(f"Send email: {email} with passowrd: {password} \\ "
-     #     f"the res is :{res}")
-
-
     # No tor
     if not conf.USE_TOR:
-        #while True:
-                # random_data, email, password = randomize_data(phishing_website)
-                url = phishing_website.first_req_obj.url
-                headers = phishing_website.first_req_obj.headers
-                modified_data = generate_data(phishing_website)
-                headers["Content-Length"] = str(len(modified_data))
-
-                try:
-                    response = requests.post(url, headers=headers, data=modified_data)
-                    print(f"Data above was sent, the response status is: {response.status_code} ")
-                except Exception as e:
-                    print("Cannot fill_db because:", e.__class__)
-
+        while True:
+            send_req(phishing_website)
 
     # Using tor
     else:
@@ -86,38 +85,27 @@ def fill_db(phishing_website):
         blocked = False
         while True:
             while not blocked:
-                # random_data, email, password = randomize_data(phishing_website)
-                url = phishing_website.first_req_obj.url
-                headers = phishing_website.first_req_obj.headers
-                modified_data = generate_data(phishing_website)
-
-                try:
-
-                    response = requests.post(url, headers=headers, data=modified_data)
-                    print(f"Data above was sent, \
-                            the response status is:{response.status_code} ")
-                except Exception as e:
-                    print("Canot fill_db because:", e.__class__)
-                if not response.status_code == 200:
+                response_code = send_req(phishing_website)
+                if response_code not in conf.WHITELIST_RESPONDS:
                     blocked = True
-            #renew_connection()
+            renew_connection()
             session = get_tor_session()
             blocked = False
 
 
 #Use threads with fill_db function in order to send it multiple times
-def send_threads(function, arg, threads_num):
+def send_threads(threads_num, function, arg):
 
-    theads = []
+    threads = []
     for i in range(threads_num):
-        t = threading.Thread(target=fill_db, args=(arg,), daemon=True)
-        theads.append(t)
-
-    for i in range(threads_num):
-        theads[i].start()
+        t = threading.Thread(target=function, args=(arg,), daemon=True)
+        threads.append(t)
 
     for i in range(threads_num):
-        theads[i].join()
+        threads[i].start()
+
+    for i in range(threads_num):
+        threads[i].join()
 
 
 # Tor utilities
@@ -130,10 +118,9 @@ def get_tor_session():
 
 
 # signal TOR for a new connection
-'''
+
 def renew_connection():
-    with Controller.from_port(port=9051) as controller:
-        controller.authenticate(password="DForce")
+    with Controller.from_port(port=conf.TOR_PORT) as controller:
+        controller.authenticate(password=conf.TOR_PASS)
         # controller.authenticate()
         controller.signal(Signal.NEWNYM)
-'''

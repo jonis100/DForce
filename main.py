@@ -35,8 +35,6 @@ class PhishingWebsite:
         self.passwordFiled = driver.find_element(by=By.NAME, value=page_detales.fileds_names["password"])
         self.submitBtn = driver.find_element(by=By.NAME, value=page_detales.fileds_names["submit_button"])
         self.first_req_obj = None
-        #self.data_to_send = None
-        #self.url_for_sign = None
 
     # send sample of request  to target in order to capture the request construction
     def send_sample_and_init(self):
@@ -46,7 +44,7 @@ class PhishingWebsite:
         self.submitBtn.click()
         print("Send first login email: {} with passowrd: {}".format(self.init_email, self.init_password))
 
-# handle the url and attack it
+# Handle the url and attack it
 def handler(received_url):
 
     driver.get(received_url)
@@ -59,9 +57,10 @@ def handler(received_url):
         phishing_website.data_to_send: {phishing_website.first_req_obj.data} \n \
         phishing_website.url_for_sign: {phishing_website.first_req_obj.url}")
         return
-    #util.send_threads(util.fill_db, phishing_website, conf.THREADS_NUM)
-    util.fill_db(phishing_website)
     driver.quit()
+    #util.fill_db(phishing_website)
+    util.send_threads(conf.THREADS_NUM, util.fill_db, phishing_website)
+
 
 
 #Find the data sent to remote phishing server in order to regenerate it later
