@@ -64,8 +64,7 @@ This project tested over local servers only.
 2. Wordpress local site over [XAMPP](https://www.apachefriends.org/)
     
 
-# *Important note:*
-# *This program disrupted at testing stage by the [issue](https://github.com/wkeeling/selenium-wire/issues/628) at selenium-wire project*
+# *The Tor feature not tested properly yet*
 
 ## Contributing
 If you want contribute to DForce you more then wellcome!

@@ -10,7 +10,7 @@ from stem import Signal
 from stem.control import Controller
 
 
-# generate password in n length
+# Generate password in n length
 def generate_pass(n):
 
     # Currently other chars in password not work, because not detected (in order to replace) in binary data
@@ -18,7 +18,7 @@ def generate_pass(n):
     return ''.join(random.choice(chars) for i in range(n))
 
 
-# generate name, mail_provider, and whole email
+# Generate name, mail_provider, and whole email
 def generate_email():
     name = random.choice(names.names_list)
     mail_provider = random.choice(names.mail_list)
@@ -26,21 +26,21 @@ def generate_email():
     return name, mail_provider, email
 
 
-#Return new randomized data for request and the mail and password it contained.
+# Return new randomized data for request and the mail and password it contained.
 def randomize_data(phishing_website):
 
     res = phishing_website.first_req_obj.data.decode("utf-8")
     random_name, random_mail_provider, random_email = generate_email()
     random_password = generate_pass(conf.PASSWORDS_LEN)
-
     res = res.replace(phishing_website.init_name, random_name)
     res = res.replace(phishing_website.init_mail_provider, random_mail_provider)
     res = res.replace(phishing_website.init_password, random_password)
-    print(f"Send email: {random_email} with passowrd: {random_password} \n "
-         f"in res :\t\t\t{res} \n res after encoding:\t{res.encode()}")
+    print(f'Send email: {random_email} with passowrd: {random_password} \n'
+         f'in res :\t\t\t{res} \n res after encoding:\t{res.encode()}')
     return res.encode(), random_email, random_password
 
 
+# Generating random data
 def generate_data(phishing_website):
 
     random_name, random_mail_provider, random_email = generate_email()
@@ -52,7 +52,9 @@ def generate_data(phishing_website):
     return data, random_email, random_password
 
 
-def send_req(phishing_website):
+# Sending one request with generated data
+def send_gen_req(phishing_website):
+
     url = phishing_website.first_req_obj.url
     headers = phishing_website.first_req_obj.headers
     modified_data, gen_username, gen_pass = generate_data(phishing_website)
@@ -68,15 +70,15 @@ def send_req(phishing_website):
         print("Cannot fill_db because:", e.__class__)
 
 
-#Start fill DB of remote server by sending a lot of data
+# Start fill DB of remote server by while true with send_req
 def fill_db(phishing_website):
 
-    # No tor
+    # No Tor
     if not conf.USE_TOR:
         while True:
-            send_req(phishing_website)
+            send_gen_req(phishing_website)
 
-    # Using tor
+    # Using Tor
     else:
         proxy = {
             'http': 'socks5://127.0.0.1:9050',
@@ -93,7 +95,7 @@ def fill_db(phishing_website):
             blocked = False
 
 
-#Use threads with fill_db function in order to send it multiple times
+# Use threads with fill_db function in order to send it multiple times
 def send_threads(threads_num, function, arg):
 
     threads = []
@@ -118,7 +120,6 @@ def get_tor_session():
 
 
 # signal TOR for a new connection
-
 def renew_connection():
     with Controller.from_port(port=conf.TOR_PORT) as controller:
         controller.authenticate(password=conf.TOR_PASS)
